@@ -1,5 +1,5 @@
 export async function home() {
-  const url = "https://api.viki.io/v4/containers.json?page=1&per_page=24&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
+  const url = "https://api.viki.io/v4/containers.json?page=1&per_page=30&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
   const response = await kino.fetch(url);
   const data = JSON.parse(await response.text());
 
@@ -8,15 +8,17 @@ export async function home() {
       id: String(item.id),
       ref: String(item.id),
       title: item.titles?.es || item.titles?.en || "Sin título",
-      poster: item.images?.poster?.url,
+      // Usamos la imagen panorámica (backdrop) si existe, o el póster como respaldo para que luzca ancho como en la captura
+      poster: item.images?.backdrop?.url || item.images?.poster?.url,
       kind: item.type === "series" ? "series" : "movie"
     };
   });
 
+  // Retornamos una sola gran fila fluida sin categorías raras, idéntica a los mejores plugins de Kino
   return [
     {
-      id: "viki_recientes",
-      title: "Series y Películas (Gratis)",
+      id: "viki_todo",
+      title: "Series y Películas Populares",
       items: items
     }
   ];
@@ -36,36 +38,24 @@ export async function resolve(ref) {
   };
 }
 
-// Tablero principal optimizado para interfaz fluida
 export function screen(route) {
   if (!route.path || route.path === "main") {
     return {
       type: "Scaffold",
       appBar: {
         type: "AppBar",
-        title: "Tablero Viki Gratis",
+        title: "Viki Gratis",
         mergeWithKinoBar: true,
         dense: true,
         leading: { close: true }
       },
       body: {
-        type: "ListView",
-        children: [
-          {
-            type: "ListTile",
-            title: "¡Bienvenida al catálogo de Viki!",
-            subtitle: "Explora las series y películas coreanas gratuitas desde la pantalla de Inicio de Kino."
-          },
-          {
-            type: "Card",
-            title: "Ver recomendados recientes",
-            subtitle: "Accede a los estrenos y contenido más popular sin anuncios ni cuentas."
-          }
-        ]
+        type: "ListTile",
+        title: "Catálogo completo disponible",
+        subtitle: "Explora todo el contenido directamente desde la página de Inicio de Kino."
       }
     };
   }
-
   return {
     type: "Scaffold",
     body: { type: "ListTile", title: "Pantalla no encontrada" }
