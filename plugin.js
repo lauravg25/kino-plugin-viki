@@ -36,43 +36,32 @@ export async function resolve(ref) {
   };
 }
 
-// Pantalla propia de Viki con filas limpias y texto seguro
-export async function screen(route) {
+// Tablero principal optimizado para interfaz fluida
+export function screen(route) {
   if (!route.path || route.path === "main") {
-    const url = "https://api.viki.io/v4/containers.json?page=1&per_page=24&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
-    const response = await kino.fetch(url);
-    const data = JSON.parse(await response.text());
-
-    const listTiles = data.response.map(item => {
-      const titulo = item.titles?.es || item.titles?.en || "Sin título";
-      return {
-        type: "ListTile",
-        title: titulo,
-        subtitle: "Película / Serie asiática gratuita",
-        leading: {
-          type: "Image",
-          url: item.images?.poster?.url
-        },
-        onSelect: {
-          open: {
-            resolve: { ref: String(item.id) }
-          }
-        }
-      };
-    });
-
     return {
       type: "Scaffold",
       appBar: {
         type: "AppBar",
-        title: "Tablero Viki Gratis - Catálogo",
+        title: "Tablero Viki Gratis",
         mergeWithKinoBar: true,
         dense: true,
         leading: { close: true }
       },
       body: {
         type: "ListView",
-        children: listTiles
+        children: [
+          {
+            type: "ListTile",
+            title: "¡Bienvenida al catálogo de Viki!",
+            subtitle: "Explora las series y películas coreanas gratuitas desde la pantalla de Inicio de Kino."
+          },
+          {
+            type: "Card",
+            title: "Ver recomendados recientes",
+            subtitle: "Accede a los estrenos y contenido más popular sin anuncios ni cuentas."
+          }
+        ]
       }
     };
   }
