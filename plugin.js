@@ -36,20 +36,23 @@ export async function resolve(ref) {
   };
 }
 
-// Pantalla propia de Viki convertida en una cuadrícula (GridView)
+// Pantalla propia de Viki con filas limpias y texto seguro
 export async function screen(route) {
   if (!route.path || route.path === "main") {
-    // Obtenemos los datos para mostrarlos en la pantalla
     const url = "https://api.viki.io/v4/containers.json?page=1&per_page=24&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
     const response = await kino.fetch(url);
     const data = JSON.parse(await response.text());
 
-    const gridItems = data.response.map(item => {
+    const listTiles = data.response.map(item => {
+      const titulo = item.titles?.es || item.titles?.en || "Sin título";
       return {
-        type: "Card",
-        title: item.titles?.es || item.titles?.en || "Sin título",
-        image: item.images?.poster?.url,
-        // Al hacer clic, abre el reproductor o detalles de ese título
+        type: "ListTile",
+        title: titulo,
+        subtitle: "Película / Serie asiática gratuita",
+        leading: {
+          type: "Image",
+          url: item.images?.poster?.url
+        },
         onSelect: {
           open: {
             resolve: { ref: String(item.id) }
@@ -68,9 +71,8 @@ export async function screen(route) {
         leading: { close: true }
       },
       body: {
-        type: "GridView",
-        crossAxisCount: 3, // Muestra 3 elementos uno al lado del otro por fila
-        children: gridItems
+        type: "ListView",
+        children: listTiles
       }
     };
   }
