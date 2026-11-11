@@ -8,13 +8,11 @@ export async function home() {
       id: String(item.id),
       ref: String(item.id),
       title: item.titles?.es || item.titles?.en || "Sin título",
-      // Usamos la imagen panorámica (backdrop) si existe, o el póster como respaldo para que luzca ancho como en la captura
       poster: item.images?.backdrop?.url || item.images?.poster?.url,
       kind: item.type === "series" ? "series" : "movie"
     };
   });
 
-  // Retornamos una sola gran fila fluida sin categorías raras, idéntica a los mejores plugins de Kino
   return [
     {
       id: "viki_todo",
@@ -38,24 +36,56 @@ export async function resolve(ref) {
   };
 }
 
-export function screen(route) {
+// Pantalla de Tablero con tarjetas visuales del catálogo
+export async function screen(route) {
   if (!route.path || route.path === "main") {
+    const url = "https://api.viki.io/v4/containers.json?page=1&per_page=30&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
+    const response = await kino.fetch(url);
+    const data = JSON.parse(await response.text());
+
+    // Creamos tarjetas visuales con las imágenes y títulos de Viki
+    const cards = data.response.map(item => {
+      const titulo = item.titles?.es || item.titles?.en || "Sin título";
+      const imagen = item.images?.backdrop?.url || item.images?.poster?.url;
+      return {
+        type: "Card",
+        title: titulo,
+        image: imagen,
+        onSelect: {
+          open: {
+            resolve: { ref: String(item.id) }
+          }
+        }
+      };
+    });
+
     return {
       type: "Scaffold",
       appBar: {
         type: "AppBar",
-        title: "Viki Gratis",
+        title: "Tablero Viki - Catálogo",
         mergeWithKinoBar: true,
         dense: true,
         leading: { close: true }
       },
       body: {
-        type: "ListTile",
-        title: "Catálogo completo disponible",
-        subtitle: "Explora todo el contenido directamente desde la página de Inicio de Kino."
+        type: "ListView",
+        children: [
+          {
+            type: "ListTile",
+            title: "Tendencias de la semana",
+            subtitle: "Explora el contenido gratuito directamente aquí"
+          },
+          {
+            type: "GridView",
+            crossAxisCount: 4, // 4 miniaturas por fila para que se parezca a YojaTV
+            children: cards
+          }
+        ]
       }
     };
   }
+
   return {
     type: "Scaffold",
     body: { type: "ListTile", title: "Pantalla no encontrada" }
