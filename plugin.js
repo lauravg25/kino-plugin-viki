@@ -38,41 +38,11 @@ export async function resolve(ref) {
 
 export async function screen(route) {
   if (!route.path || route.path === "main") {
-    let listTiles = [];
-    try {
-      const url = "https://api.viki.io/v4/containers.json?page=1&per_page=30&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
-      const response = await kino.fetch(url);
-      const data = JSON.parse(await response.text());
-      const rawList = data.response || [];
-
-      // Mapeamos a ListTile seguros que el motor secundario de Kino dibuja al 100%
-      listTiles = rawList.map(item => {
-        const titulo = item.titles?.es || item.titles?.en || "Sin título";
-        const tipo = item.type === "series" ? "Serie Asiática" : "Película";
-        return {
-          type: "ListTile",
-          title: titulo,
-          subtitle: `Tipo: ${tipo} • Gratuito en Viki`,
-          onSelect: {
-            open: {
-              resolve: { ref: String(item.id) }
-            }
-          }
-        };
-      });
-    } catch (e) {
-      listTiles = [{
-        type: "ListTile",
-        title: "Error al cargar contenido",
-        subtitle: "Verifique su conexión a internet"
-      }];
-    }
-
     return {
       type: "Scaffold",
       appBar: {
         type: "AppBar",
-        title: "Tablero Viki - Catálogo Directo",
+        title: "Tablero Viki - Acceso Directo",
         mergeWithKinoBar: true,
         dense: true,
         leading: { close: true }
@@ -82,10 +52,19 @@ export async function screen(route) {
         children: [
           {
             type: "ListTile",
-            title: "Tendencias Actuales",
-            subtitle: "Selecciona cualquier título para reproducir"
+            title: "Catálogo Principal Disponible",
+            subtitle: "Todo el contenido gratuito de Viki está sincronizado en la pestaña de Inicio de Kino."
           },
-          ...listTiles
+          {
+            type: "ListTile",
+            title: "Explorar Tendencias",
+            subtitle: "Haz clic aquí para ir al listado completo de series y películas asiáticas",
+            onSelect: {
+              open: {
+                home: true
+              }
+            }
+          }
         ]
       }
     };
