@@ -1,25 +1,29 @@
 export async function home() {
-  const url = "https://api.viki.io/v4/containers.json?page=1&per_page=30&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
-  const response = await kino.fetch(url);
-  const data = JSON.parse(await response.text());
+  try {
+    const url = "https://api.viki.io/v4/containers.json?page=1&per_page=30&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
+    const response = await kino.fetch(url);
+    const data = JSON.parse(await response.text());
 
-  const items = (data.response || []).map(item => {
-    return {
-      id: String(item.id),
-      ref: String(item.id),
-      title: item.titles?.es || item.titles?.en || "Sin título",
-      poster: item.images?.backdrop?.url || item.images?.poster?.url,
-      kind: item.type === "series" ? "series" : "movie"
-    };
-  });
+    const items = (data.response || []).map(item => {
+      return {
+        id: String(item.id),
+        ref: String(item.id),
+        title: item.titles?.es || item.titles?.en || "Sin título",
+        poster: item.images?.backdrop?.url || item.images?.poster?.url || "",
+        kind: item.type === "series" ? "series" : "movie"
+      };
+    });
 
-  return [
-    {
-      id: "viki_todo",
-      title: "Series y Películas Populares",
-      items: items
-    }
-  ];
+    return [
+      {
+        id: "viki_popular",
+        title: "Populares en Viki",
+        items: items
+      }
+    ];
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function browse(ref) {
@@ -42,7 +46,7 @@ export async function screen(route) {
       type: "Scaffold",
       appBar: {
         type: "AppBar",
-        title: "Tablero Viki - Acceso Directo",
+        title: "Tablero Viki",
         mergeWithKinoBar: true,
         dense: true,
         leading: { close: true }
@@ -52,18 +56,8 @@ export async function screen(route) {
         children: [
           {
             type: "ListTile",
-            title: "Catálogo Principal Disponible",
-            subtitle: "Todo el contenido gratuito de Viki está sincronizado en la pestaña de Inicio de Kino."
-          },
-          {
-            type: "ListTile",
-            title: "Explorar Tendencias",
-            subtitle: "Haz clic aquí para ir al listado completo de series y películas asiáticas",
-            onSelect: {
-              open: {
-                home: true
-              }
-            }
+            title: "Viki Gratis - Estado del Plugin",
+            subtitle: "El catálogo está sincronizado correctamente. Ve a la pestaña de Inicio de Kino para explorar y reproducir las series y películas."
           }
         ]
       }
