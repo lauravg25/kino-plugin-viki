@@ -42,21 +42,13 @@ export async function screen(route) {
     const response = await kino.fetch(url);
     const data = JSON.parse(await response.text());
 
-    // Obtenemos los elementos de forma segura
-    const rawList = data.response || data.data || [];
-
-    const cards = rawList.map(item => {
-      const titulo = item.titles?.es || item.titles?.en || item.title || "Sin título";
-      const imagen = item.images?.backdrop?.url || item.images?.poster?.url || item.image || "";
+    const items = (data.response || []).map(item => {
       return {
-        type: "Card",
-        title: titulo,
-        image: imagen,
-        onSelect: {
-          open: {
-            resolve: { ref: String(item.id) }
-          }
-        }
+        id: String(item.id),
+        ref: String(item.id),
+        title: item.titles?.es || item.titles?.en || "Sin título",
+        poster: item.images?.backdrop?.url || item.images?.poster?.url,
+        kind: item.type === "series" ? "series" : "movie"
       };
     });
 
@@ -74,13 +66,13 @@ export async function screen(route) {
         children: [
           {
             type: "ListTile",
-            title: "Tendencias de la semana",
-            subtitle: "Explora el contenido gratuito directamente aquí"
+            title: "Catálogo de Series y Películas",
+            subtitle: "Explora las tendencias asiáticas gratuitas"
           },
           {
-            type: "GridView",
-            crossAxisCount: 4,
-            children: cards
+            type: "CatalogRow",
+            title: "Populares en Viki",
+            items: items
           }
         ]
       }
