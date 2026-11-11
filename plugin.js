@@ -3,7 +3,7 @@ export async function home() {
   const response = await kino.fetch(url);
   const data = JSON.parse(await response.text());
 
-  const items = data.response.map(item => {
+  const items = (data.response || []).map(item => {
     return {
       id: String(item.id),
       ref: String(item.id),
@@ -36,17 +36,18 @@ export async function resolve(ref) {
   };
 }
 
-// Pantalla de Tablero con tarjetas visuales del catálogo
 export async function screen(route) {
   if (!route.path || route.path === "main") {
     const url = "https://api.viki.io/v4/containers.json?page=1&per_page=30&has_paywall_content=false&sort=views_recent&licensed=true&app=100000a";
     const response = await kino.fetch(url);
     const data = JSON.parse(await response.text());
 
-    // Creamos tarjetas visuales con las imágenes y títulos de Viki
-    const cards = data.response.map(item => {
-      const titulo = item.titles?.es || item.titles?.en || "Sin título";
-      const imagen = item.images?.backdrop?.url || item.images?.poster?.url;
+    // Obtenemos los elementos de forma segura
+    const rawList = data.response || data.data || [];
+
+    const cards = rawList.map(item => {
+      const titulo = item.titles?.es || item.titles?.en || item.title || "Sin título";
+      const imagen = item.images?.backdrop?.url || item.images?.poster?.url || item.image || "";
       return {
         type: "Card",
         title: titulo,
@@ -78,7 +79,7 @@ export async function screen(route) {
           },
           {
             type: "GridView",
-            crossAxisCount: 4, // 4 miniaturas por fila para que se parezca a YojaTV
+            crossAxisCount: 4,
             children: cards
           }
         ]
